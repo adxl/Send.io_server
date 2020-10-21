@@ -1,21 +1,22 @@
-require('dotenv').config()
+require('dotenv').config();
 
-const express = require('express')
-const app = express()
-app.use(express.json())
+const express = require('express');
+const app = express();
+app.use(express.json());
 
-const db = require('./db')
+const db = require('./db');
+const user = require('./models/user');
 
 // dev
-console.clear()
+console.clear();
 
-db.connect()
+db.connect();
 
 // app.get('/', (req, res) => {
 //   return res.status(200).send('Send.io')
 // })
 
 // port config
-const port = process.env.PORT || 4000
+const port = process.env.PORT || 4000;
 
-app.listen(port, () => console.log(port))
+app.listen(port, () => console.log(port));
