@@ -10,7 +10,9 @@ app.use(express.json());
 // exports
 const db = require('./db');
 const User = require('./models/user');
+const auth = require('./auth.js');
 
+app.use(auth.router);
 // dev
 console.clear();
 db.connect();
@@ -18,6 +20,10 @@ db.connect();
 app.get('/users', async (req, res) => {
 	const users = await User.findAll();
 	return res.status(200).json(users);
+});
+
+app.get('/me', auth.authToken, (req, res) => {
+	console.log(req.id);
 });
 
 app.post('/register', async (req, res) => {
