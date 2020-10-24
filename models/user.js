@@ -2,20 +2,19 @@ const { DataTypes } = require('sequelize');
 const db = require('../db');
 
 const User = db.sequelize.define('user', {
-	username: {
-		type: DataTypes.TEXT,
+	id: {
+		type: DataTypes.STRING,
 		allowNull: false,
 		primaryKey: true,
 	},
-	firstName: {
+	username: {
 		type: DataTypes.TEXT,
 		allowNull: false,
 	},
-	lastName: {
-		type: DataTypes.TEXT,
+	code: {
+		type: DataTypes.INT,
 		allowNull: false,
 	},
-
 }, { timestamps: false });
 
 module.exports = User;
