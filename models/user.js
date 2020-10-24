@@ -12,7 +12,7 @@ const User = db.sequelize.define('user', {
 		allowNull: false,
 	},
 	code: {
-		type: DataTypes.INT,
+		type: DataTypes.INTEGER,
 		allowNull: false,
 	},
 }, { timestamps: false });
