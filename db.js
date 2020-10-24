@@ -1,20 +1,21 @@
 require('dotenv').config();
 
 const { Sequelize } = require('sequelize');
+
 const sequelize = new Sequelize(process.env.PG_URL, {
-  logging: false
+	logging: false,
 });
 
 const connect = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('Connected');
-  } catch (error) {
-    console.error('ERROR', error);
-  }
+	try {
+		await sequelize.authenticate();
+		console.log('Connected');
+	} catch (error) {
+		console.error('ERROR', error);
+	}
 };
 
 module.exports = {
-  sequelize: sequelize,
-  connect: connect
+	sequelize,
+	connect,
 };

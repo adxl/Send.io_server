@@ -15,6 +15,10 @@ const User = db.sequelize.define('user', {
 		type: DataTypes.INTEGER,
 		allowNull: false,
 	},
+	password: {
+		type: DataTypes.TEXT,
+		allowNull: false,
+	},
 }, { timestamps: false });
 
 module.exports = User;

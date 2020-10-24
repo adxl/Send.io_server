@@ -1,10 +1,13 @@
 require('dotenv').config();
 
+// dep
 const express = require('express');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());
 
+// exports
 const db = require('./db');
 const User = require('./models/user');
 
@@ -17,21 +20,24 @@ app.get('/users', async (req, res) => {
 	return res.status(200).json(users);
 });
 
-app.post('/users/create', async (req, res) => {
+app.post('/register', async (req, res) => {
 	const { username } = req.body;
 
 	let code;
+	let id;
 	let userExists;
 
 	do {
 		code = Math.floor(Math.random() * (9999 - 1000)) + 1000;
-		userExists = await User.findByPk(`${username}#${code}`).then((u) => u);
+		id = `${username}#${code}`;
+		userExists = await User.findByPk(id).then((u) => u);
 	} while (userExists);
 
 	const user = {
 		username,
 		code,
-		id: `${username}#${code}`,
+		id,
+		password: await bcrypt.hash(req.body.password, 10),
 	};
 
 	await User.create(user);
