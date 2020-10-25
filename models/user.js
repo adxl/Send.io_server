@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const db = require('../db');
+const Friendship = require('./friendship');
 
 const User = db.sequelize.define('user', {
 	id: {
@@ -8,17 +9,26 @@ const User = db.sequelize.define('user', {
 		primaryKey: true,
 	},
 	username: {
-		type: DataTypes.TEXT,
+		type: DataTypes.STRING,
 		allowNull: false,
 	},
 	code: {
-		type: DataTypes.INTEGER,
+		type: DataTypes.SMALLINT,
 		allowNull: false,
 	},
 	password: {
-		type: DataTypes.TEXT,
+		type: DataTypes.STRING,
 		allowNull: false,
 	},
 }, { timestamps: false });
+
+User.hasMany(Friendship, {
+	foreignKey: 'usr',
+	onDelete: 'CASCADE',
+});
+User.hasMany(Friendship, {
+	foreignKey: 'friend',
+	onDelete: 'CASCADE',
+});
 
 module.exports = User;

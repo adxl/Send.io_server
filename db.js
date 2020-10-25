@@ -10,6 +10,7 @@ const connect = async () => {
 	try {
 		await sequelize.authenticate();
 		console.log('Connected');
+		await sequelize.sync({ alter: true });
 	} catch (error) {
 		console.error('ERROR', error);
 	}
