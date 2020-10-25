@@ -9,23 +9,66 @@ app.use(express.json());
 
 // exports
 const db = require('./db');
-const User = require('./models/user');
 const auth = require('./auth.js');
+const User = require('./models/user');
+const Friendship = require('./models/friendship');
+const Invite = require('./models/invite');
 
 app.use(auth.router);
-// dev
-console.clear();
-db.connect();
 
+/* !DEV BLOCK! */
+console.clear();
+console.log('*************');
+// get list of users
 app.get('/users', async (req, res) => {
 	const users = await User.findAll();
 	return res.status(200).json(users);
 });
+/* !END OF DEV BLOCK! */
 
-app.get('/me', auth.authToken, (req, res) => {
-	console.log(req.id);
+// get current user (from token)
+app.get('/users/me', auth.authToken, (req, res) => res.status(200).send(req.id));
+
+// send an friend request
+app.post('/invites/send', auth.authToken, async (req, res) => {
+	const user = req.id;
+	const { friend } = req.body;
+
+	if (user === friend) {
+		return res.status(400).send('You can\'t invite yourself');
+	}
+
+	const inviteExists = await Invite.findByPk(`${user}_${friend}`);
+	if (inviteExists) {
+		return res.status(400).send('Invite already sent');
+	}
+
+	const friendExists = await User.findByPk(friend);
+
+	if (!friendExists) {
+		return res.status(404).send('User not found');
+	}
+
+	const invite = {
+		usr: user,
+		friend,
+		invite: `${user}_${friend}`,
+	};
+
+	await Invite.create(invite);
+	return res.status(201).send('Invite sent');
 });
 
+// app.post('/invites/cancel', (req, res) => {
+// });
+
+// app.post('/invites/accept', (req, res) => {
+// });
+
+// app.post('/invites/deny', (req, res) => {
+// });
+
+// add new user
 app.post('/register', async (req, res) => {
 	const { username } = req.body;
 
@@ -50,7 +93,6 @@ app.post('/register', async (req, res) => {
 	return res.status(201).send(user.id);
 });
 
-// port config
+// init
 const port = process.env.PORT || 4000;
-
-app.listen(port, () => console.log(port));
+app.listen(port, () => db.connect());
