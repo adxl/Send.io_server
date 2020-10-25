@@ -33,20 +33,18 @@ app.get('/users/me', auth.authToken, (req, res) => res.status(200).send(req.id))
 app.post('/invites/send', auth.authToken, async (req, res) => {
 	const user = req.id;
 	const { friend } = req.body;
+	const id = `${user}_${friend}`;
 
 	if (user === friend) {
 		return res.status(400).send('You can\'t invite yourself');
 	}
 
-	const inviteExists = await Invite.findByPk(`${user}_${friend}`);
-	if (inviteExists) {
-		return res.status(400).send('Invite already sent');
+	if (await db.isNotPresent(User, friend)) {
+		return res.status(404).send('User not found');
 	}
 
-	const friendExists = await User.findByPk(friend);
-
-	if (!friendExists) {
-		return res.status(404).send('User not found');
+	if (await db.isPresent(Invite, id)) {
+		return res.status(400).send('Invite already sent');
 	}
 
 	const invite = {

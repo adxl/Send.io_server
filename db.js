@@ -16,7 +16,12 @@ const connect = async () => {
 	}
 };
 
+const isPresent = async (model, id) => await model.findByPk(id) != null;
+const isNotPresent = async (model, id) => await model.findByPk(id) == null;
+
 module.exports = {
 	sequelize,
 	connect,
+	isPresent,
+	isNotPresent,
 };
