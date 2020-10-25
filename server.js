@@ -50,15 +50,29 @@ app.post('/invites/send', auth.authToken, async (req, res) => {
 	const invite = {
 		usr: user,
 		friend,
-		invite: `${user}_${friend}`,
+		invite: id,
 	};
 
 	await Invite.create(invite);
 	return res.status(201).send('Invite sent');
 });
 
-// app.post('/invites/cancel', (req, res) => {
-// });
+app.post('/invites/cancel', auth.authToken, async (req, res) => {
+	const user = req.id;
+	const { friend } = req.body;
+	const invite = `${user}_${friend}`;
+
+	if (await db.isNotPresent(Invite, invite)) {
+		return res.status(404).send('Invite doesn\'t exists');
+	}
+
+	await Invite.destroy({
+		where: {
+			invite,
+		},
+	});
+	return res.status(200).send('Invite canceled');
+});
 
 // app.post('/invites/accept', (req, res) => {
 // });
