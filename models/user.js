@@ -4,7 +4,7 @@ const Friendship = require('./friendship');
 const Invite = require('./invite');
 
 const User = db.sequelize.define('user', {
-	id: {
+	userId: {
 		type: DataTypes.STRING,
 		allowNull: false,
 		primaryKey: true,
@@ -26,14 +26,14 @@ const User = db.sequelize.define('user', {
 // User has many friendships : usr->friend  /  friend->usr
 User.hasMany(Friendship, {
 	foreignKey: {
-		name: 'usr',
+		name: 'userId',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',
 });
 User.hasMany(Friendship, {
 	foreignKey: {
-		name: 'friend',
+		name: 'friendId',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',
@@ -43,7 +43,7 @@ User.hasMany(Friendship, {
 
 User.hasMany(Invite, {
 	foreignKey: {
-		name: 'usr',
+		name: 'userId',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',
@@ -51,7 +51,7 @@ User.hasMany(Invite, {
 
 User.hasMany(Invite, {
 	foreignKey: {
-		name: 'friend',
+		name: 'friendId',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',

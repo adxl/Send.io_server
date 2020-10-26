@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const db = require('../db');
 
 const Friendship = db.sequelize.define('friendship', {
-	friendship: {
+	friendshipId: {
 		type: DataTypes.STRING,
 		allowNull: false,
 		primaryKey: true,
