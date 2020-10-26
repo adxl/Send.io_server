@@ -105,8 +105,22 @@ app.post('/invites/accept', auth.authToken, async (req, res) => {
 	return res.status(201).send('Invite accepted');
 });
 
-// app.post('/invites/deny', (req, res) => {
-// });
+app.post('/invites/deny', auth.authToken, async (req, res) => {
+	const user = req.id;
+	const { friend } = req.body;
+	const invite = `${friend}_${user}`;
+
+	if (await db.isNotPresent(Invite, invite)) {
+		return res.status(404).send('Invite does not exist');
+	}
+
+	await Invite.destroy({
+		where: {
+			invite,
+		},
+	});
+	return res.status(200).send('Invite denied');
+});
 
 // add new user
 app.post('/register', async (req, res) => {
