@@ -13,6 +13,7 @@ const auth = require('./auth.js');
 const User = require('./models/user');
 const Friendship = require('./models/friendship');
 const Invite = require('./models/invite');
+const { isPresent } = require('./db');
 
 app.use(auth.router);
 
@@ -32,16 +33,40 @@ app.get('/users', async (req, res) => {
 app.get('/users/me', auth.authToken, async (req, res) => {
 	const { userId } = req;
 
-	if (await db.isNotPresent(User, userId)) {
-		return res.status(404).send('User not found');
-	}
-
 	const user = await User.findByPk(userId);
 
 	const data = {
 		id: user.userId,
 		username: user.username,
 		code: user.code,
+	};
+
+	return res.status(200).json(data);
+});
+
+// get public user
+app.get('/users/x', auth.authToken, async (req, res) => {
+	const { userId } = req;
+	const { searchedUserId } = req.body;
+
+	if (await db.isNotPresent(User, searchedUserId)) {
+		return res.status(404).send('User not found');
+	}
+
+	const user = await User.findByPk(searchedUserId);
+	const isFriend = await isPresent(Friendship, `${userId}_${searchedUserId}`);
+	const isRequested = await isPresent(Invite, `${userId}_${searchedUserId}`);
+	const isInvitedBy = await isPresent(Invite, `${searchedUserId}_${userId}`);
+	const isSelf = userId === searchedUserId;
+
+	const data = {
+		id: user.userId,
+		username: user.username,
+		code: user.code,
+		isFriend,
+		isRequested,
+		isInvitedBy,
+		isSelf,
 	};
 
 	return res.status(200).json(data);
