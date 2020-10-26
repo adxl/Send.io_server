@@ -29,7 +29,23 @@ app.get('/users', async (req, res) => {
 /* !END OF DEV BLOCK! */
 
 // get current user (from token)
-app.get('/users/me', auth.authToken, (req, res) => res.status(200).send(req.id));
+app.get('/users/me', auth.authToken, async (req, res) => {
+	const { userId } = req;
+
+	if (await db.isNotPresent(User, userId)) {
+		return res.status(404).send('User not found');
+	}
+
+	const user = await User.findByPk(userId);
+
+	const data = {
+		id: user.userId,
+		username: user.username,
+		code: user.code,
+	};
+
+	return res.status(200).json(data);
+});
 
 // send an friend request
 app.post('/invites/send', auth.authToken, async (req, res) => {
@@ -63,6 +79,7 @@ app.post('/invites/send', auth.authToken, async (req, res) => {
 	return res.status(201).send('Invite sent');
 });
 
+// cancel a sent request
 app.post('/invites/cancel', auth.authToken, async (req, res) => {
 	const { userId } = req;
 	const { friendId } = req.body;
@@ -80,6 +97,7 @@ app.post('/invites/cancel', auth.authToken, async (req, res) => {
 	return res.status(200).send('Invite canceled');
 });
 
+// accept a friend request
 app.post('/invites/accept', auth.authToken, async (req, res) => {
 	const { userId } = req;
 	const { friendId } = req.body;
@@ -111,6 +129,7 @@ app.post('/invites/accept', auth.authToken, async (req, res) => {
 	return res.status(201).send('Invite accepted');
 });
 
+// deny a friend request
 app.post('/invites/deny', auth.authToken, async (req, res) => {
 	const { userId } = req;
 	const { friendId } = req.body;
