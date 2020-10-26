@@ -20,6 +20,15 @@ const isPresent = async (model, id) => await model.findByPk(id) != null;
 const isNotPresent = async (model, id) => await model.findByPk(id) == null;
 
 const buildId = (id1, id2) => `${id1}_${id2}`;
+const splitId = (id) => {
+	const infos = id.split('#');
+	const data = {
+		username: infos[0],
+		code: infos[1],
+		id,
+	};
+	return data;
+};
 
 module.exports = {
 	sequelize,
@@ -27,4 +36,5 @@ module.exports = {
 	isPresent,
 	isNotPresent,
 	buildId,
+	splitId,
 };

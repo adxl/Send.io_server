@@ -22,7 +22,7 @@ router.post('/login', async (req, res) => {
 	return res.status(400).send('Wrong username or/and password');
 });
 
-const authenticateToken = (req, res, next) => {
+const authToken = (req, res, next) => {
 	const token = req.headers.authorization;
 
 	if (token == null) return res.status(401).send('Bad request : no token');
@@ -36,5 +36,5 @@ const authenticateToken = (req, res, next) => {
 
 module.exports = {
 	router,
-	authToken: authenticateToken,
+	authToken,
 };

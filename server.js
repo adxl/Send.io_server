@@ -172,6 +172,20 @@ app.post('/invites/deny', auth.authToken, async (req, res) => {
 	return res.status(200).send('Invite denied');
 });
 
+app.get('/friends', auth.authToken, async (req, res) => {
+	const { userId } = req;
+
+	const friends = await Friendship.findAll({
+		attributes: ['friendId'],
+		where: {
+			userId,
+		},
+	});
+
+	const friendsList = friends.map((f) => db.splitId(f.friendId));
+
+	return res.status(200).json(friendsList);
+});
 // add new user
 app.post('/register', async (req, res) => {
 	const { username } = req.body;
