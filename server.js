@@ -172,6 +172,7 @@ app.post('/invites/deny', auth.authToken, async (req, res) => {
 	return res.status(200).send('Invite denied');
 });
 
+// get friends list
 app.get('/friends', auth.authToken, async (req, res) => {
 	const { userId } = req;
 
@@ -186,6 +187,34 @@ app.get('/friends', auth.authToken, async (req, res) => {
 
 	return res.status(200).json(friendsList);
 });
+
+// remove friend
+app.post('/friends/unfriend', auth.authToken, async (req, res) => {
+	const { userId } = req;
+	const { friendId } = req.body;
+	const friendshipId = db.buildId(userId, friendId);
+
+	if (await db.isNotPresent(Friendship, friendshipId)) {
+		return res.status(404).send('Friend not found');
+	}
+
+	const friendshipUserSide = friendshipId;
+	const friendshipFriendSide = db.buildId(friendId, userId);
+
+	await Friendship.destroy({
+		where: {
+			friendshipId: friendshipUserSide,
+		},
+	});
+	await Friendship.destroy({
+		where: {
+			friendshipId: friendshipFriendSide,
+		},
+	});
+
+	return res.status(200).send('Removed friend');
+});
+
 // add new user
 app.post('/register', async (req, res) => {
 	const { username } = req.body;
