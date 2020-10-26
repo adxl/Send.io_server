@@ -19,11 +19,13 @@ app.use(auth.router);
 /* !DEV BLOCK! */
 console.clear();
 console.log('*************');
+
 // get list of users
 app.get('/users', async (req, res) => {
 	const users = await User.findAll();
 	return res.status(200).json(users);
 });
+
 /* !END OF DEV BLOCK! */
 
 // get current user (from token)
@@ -33,7 +35,7 @@ app.get('/users/me', auth.authToken, (req, res) => res.status(200).send(req.id))
 app.post('/invites/send', auth.authToken, async (req, res) => {
 	const user = req.id;
 	const { friend } = req.body;
-	const id = `${user}_${friend}`;
+	const inviteId = `${user}_${friend}`;
 
 	if (user === friend) {
 		return res.status(400).send('You can\'t invite yourself');
@@ -43,14 +45,18 @@ app.post('/invites/send', auth.authToken, async (req, res) => {
 		return res.status(404).send('User not found');
 	}
 
-	if (await db.isPresent(Invite, id)) {
+	if (await db.isPresent(Invite, `${friend}_${user}`)) {
+		return res.status(400).send('You have already been invited');
+	}
+
+	if (await db.isPresent(Invite, inviteId)) {
 		return res.status(400).send('Invite already sent');
 	}
 
 	const invite = {
 		usr: user,
 		friend,
-		invite: id,
+		invite: inviteId,
 	};
 
 	await Invite.create(invite);
