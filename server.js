@@ -264,7 +264,7 @@ app.get('/conversations', auth.authToken, async (req, res) => {
 		},
 	});
 
-	const conversationsList = conversations.map((c) => db.splitPairId(c.ConversationId));
+	const conversationsList = conversations.map((c) => db.splitPairId(c.conversationId));
 
 	return res.status(200).json(conversationsList);
 });
@@ -272,6 +272,10 @@ app.get('/conversations', auth.authToken, async (req, res) => {
 app.post('/conversations/new', auth.authToken, async (req, res) => {
 	const { userId } = req;
 	const { friendId } = req.body;
+
+	if (userId === friendId) {
+		return res.status(400).send('Cannot start a conversation with yourself');
+	}
 
 	if (await db.isNotPresent(User, friendId)) {
 		return res.status(404).send('User not found');
