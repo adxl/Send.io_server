@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const db = require('../db');
+const Conversation = require('./conversation');
 const Friendship = require('./friendship');
 const Invite = require('./invite');
 
@@ -50,6 +51,24 @@ User.hasMany(Invite, {
 });
 
 User.hasMany(Invite, {
+	foreignKey: {
+		name: 'friendId',
+		allowNull: false,
+	},
+	onDelete: 'CASCADE',
+});
+
+// User has many conversations : user->friend only : sorted
+
+User.hasMany(Conversation, {
+	foreignKey: {
+		name: 'userId',
+		allowNull: false,
+	},
+	onDelete: 'CASCADE',
+});
+
+User.hasMany(Conversation, {
 	foreignKey: {
 		name: 'friendId',
 		allowNull: false,
