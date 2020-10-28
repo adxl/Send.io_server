@@ -2,9 +2,13 @@ require('dotenv').config();
 
 // dep
 const express = require('express');
-const bcrypt = require('bcrypt');
 
 const app = express();
+
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const bcrypt = require('bcrypt');
+
 app.use(express.json());
 
 // exports
@@ -28,6 +32,23 @@ app.get('/users', async (req, res) => {
 });
 
 /* !END OF DEV BLOCK! */
+
+// socket
+io.on('connect', (socket) => {
+	const { id } = socket.handshake.query;
+	console.log(`${id} connected`);
+	socket.join(id);
+
+	socket.on('send-message', (data) => {
+		const { sender } = data;
+		const { message } = data;
+
+		io.emit('receive-message', `${sender} said : ${message}`);
+		console.log(`${sender} said : ${message}`);
+	});
+
+	socket.on('disconnect', () => console.log(`${id} left`));
+});
 
 // get current user (from token)
 app.get('/users/me', auth.authToken, async (req, res) => {
@@ -242,4 +263,4 @@ app.post('/register', async (req, res) => {
 
 // init
 const port = process.env.PORT || 4000;
-app.listen(port, () => db.connect());
+http.listen(port, () => db.connect());
