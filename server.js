@@ -17,7 +17,7 @@ const auth = require('./auth.js');
 const User = require('./models/user');
 const Friendship = require('./models/friendship');
 const Invite = require('./models/invite');
-const { isPresent } = require('./db');
+const { isPresent, buildPairId } = require('./db');
 const Conversation = require('./models/conversation');
 const Message = require('./models/message');
 
@@ -93,6 +93,21 @@ app.get('/users/x', auth.authToken, async (req, res) => {
 	};
 
 	return res.status(200).json(data);
+});
+
+app.get('/invites', auth.authToken, async (req, res) => {
+	const { userId } = req;
+
+	const invites = await Invite.findAll({
+		attributes: ['userId'],
+		where: {
+			friendId: userId,
+		},
+	});
+
+	const invitesList = invites.map((i) => db.splitUserId(i.userId));
+
+	return res.status(200).json(invitesList);
 });
 
 // send an friend request
