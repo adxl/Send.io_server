@@ -19,12 +19,29 @@ const connect = async () => {
 const isPresent = async (model, id) => await model.findByPk(id) != null;
 const isNotPresent = async (model, id) => await model.findByPk(id) == null;
 
-const buildId = (id1, id2) => `${id1}_${id2}`;
-const splitId = (id) => {
+const buildPairId = (id1, id2) => `${id1}_${id2}`;
+
+const buildConversationId = (userId, friendId) => {
+	if (userId < friendId) {
+		return `${userId}_${friendId}`;
+	}
+	return `${friendId}_${userId}`;
+};
+
+const splitUserId = (id) => {
 	const infos = id.split('#');
 	const data = {
 		username: infos[0],
 		code: infos[1],
+		id,
+	};
+	return data;
+};
+const splitPairId = (id) => {
+	const infos = id.split('_');
+	const data = {
+		user: infos[0],
+		friend: infos[1],
 		id,
 	};
 	return data;
@@ -35,6 +52,8 @@ module.exports = {
 	connect,
 	isPresent,
 	isNotPresent,
-	buildId,
-	splitId,
+	buildPairId,
+	buildConversationId,
+	splitUserId,
+	splitPairId,
 };

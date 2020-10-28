@@ -12,7 +12,7 @@ const Message = db.sequelize.define('message', {
 		type: DataTypes.STRING,
 		allowNull: false,
 	},
-	Text: {
+	text: {
 		type: DataTypes.TEXT,
 		defaultValue: '',
 		allowNull: false,
