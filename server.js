@@ -6,12 +6,15 @@ const express = require('express');
 const app = express();
 
 const http = require('http').createServer(app);
+const cors = require('cors');
 const io = require('socket.io')(http);
 const bcrypt = require('bcrypt');
 
 app.use(express.json());
+app.use(cors());
 
 // exports
+const { Op } = require('sequelize');
 const db = require('./db');
 const auth = require('./auth.js');
 const User = require('./models/user');
@@ -122,6 +125,10 @@ app.post('/invites/send', auth.authToken, async (req, res) => {
 
 	if (await db.isNotPresent(User, friendId)) {
 		return res.status(404).send('User not found');
+	}
+
+	if (await db.isPresent(Friendship, db.buildPairId(userId, friendId))) {
+		return res.status(400).send('You are already friends');
 	}
 
 	if (await db.isPresent(Invite, db.buildPairId(friendId, userId))) {
@@ -287,13 +294,19 @@ app.post('/conversations/new', auth.authToken, async (req, res) => {
 		return res.status(400).send('Conversation exists already');
 	}
 
-	const conversation = {
+	const conversationLeft = {
 		conversationId,
 		userId,
 		friendId,
 	};
+	const conversationRight = {
+		conversationId,
+		userId: friendId,
+		friendId: userId,
+	};
 
-	await Conversation.create(conversation);
+	await Conversation.create(conversationLeft);
+	await Conversation.create(conversationRight);
 	return res.status(201).send('Conversation created');
 });
 
