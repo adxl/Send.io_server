@@ -222,41 +222,42 @@ app.post('/invites/deny', auth.authToken, async (req, res) => {
 
 // get friends list
 app.get('/friends', auth.authToken, async (req, res) => {
-	const { userId } = req;
+	const { username } = req;
 
 	const friends = await Friendship.findAll({
-		attributes: ['friendId'],
+		attributes: ['friend'],
 		where: {
-			userId,
+			user: username,
 		},
 	});
 
-	const friendsList = friends.map((f) => db.splitUserId(f.friendId));
+	// const friendsList = friends.map((f) => db.splitUserId(f.friendId));
 
-	return res.status(200).json(friendsList);
+	// return res.status(200).json(friendsList);
+	return res.status(200).json(friends);
 });
 
 // remove friend
 app.post('/friends/unfriend', auth.authToken, async (req, res) => {
-	const { userId } = req;
-	const { friendId } = req.body;
-	const friendshipId = db.buildPairId(userId, friendId);
+	const { username } = req;
+	const { friend } = req.body;
+	const friendshipId = db.buildPairId(username, friend);
 
 	if (await db.isNotPresent(Friendship, friendshipId)) {
 		return res.status(404).send('Friend not found');
 	}
 
 	const friendshipUserSide = friendshipId;
-	const friendshipFriendSide = db.buildPairId(friendId, userId);
+	const friendshipFriendSide = db.buildPairId(friend, username);
 
 	await Friendship.destroy({
 		where: {
-			friendshipId: friendshipUserSide,
+			id: friendshipUserSide,
 		},
 	});
 	await Friendship.destroy({
 		where: {
-			friendshipId: friendshipFriendSide,
+			id: friendshipFriendSide,
 		},
 	});
 
