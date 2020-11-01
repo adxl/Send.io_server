@@ -20,7 +20,7 @@ const auth = require('./auth.js');
 const User = require('./models/user');
 const Friendship = require('./models/friendship');
 const Invite = require('./models/invite');
-const { isPresent, buildPairId } = require('./db');
+const { isPresent, buildPairId, isNotPresent } = require('./db');
 const Conversation = require('./models/conversation');
 const Message = require('./models/message');
 
@@ -59,29 +59,33 @@ app.get('/users', async (req, res) => {
 app.get('/users/me', auth.authToken, async (req, res) => {
 	const { username } = req;
 
-	const user = await User.findByPk(username);
+	// const user = await User.findByPk(username);
 
-	if (user == null) {
+	// if (user == null) {
+	// 	return res.status(404).send('User does not exist anymore');
+	// }
+
+	if (await isNotPresent(User, username)) {
 		return res.status(404).send('User does not exist anymore');
 	}
 
-	return res.status(200).json({ username: user.username });
+	return res.status(200).json({ username });
 });
 
 // get public user
-app.get('/users/x', auth.authToken, async (req, res) => {
-	const { userId } = req;
-	const { searchedUserId } = req.body;
+app.get('/users/:x', auth.authToken, async (req, res) => {
+	const { username } = req;
+	const { x } = req.params;
 
-	if (await db.isNotPresent(User, searchedUserId)) {
+	if (await db.isNotPresent(User, x)) {
 		return res.status(404).send('User not found');
 	}
 
-	const user = await User.findByPk(searchedUserId);
-	const isFriend = await isPresent(Friendship, db.buildPairId(userId, searchedUserId));
-	const isRequested = await isPresent(Invite, db.buildPairId(userId, searchedUserId));
-	const isInvitedBy = await isPresent(Invite, db.buildPairId(searchedUserId, userId));
-	const isSelf = userId === searchedUserId;
+	const user = await User.findByPk(x);
+	const isFriend = await isPresent(Friendship, db.buildPairId(username, x));
+	const isRequested = await isPresent(Invite, db.buildPairId(username, x));
+	const isInvitedBy = await isPresent(Invite, db.buildPairId(x, username));
+	const isSelf = username === x;
 
 	const data = {
 		id: user.userId,
@@ -330,7 +334,7 @@ app.get('/messages', auth.authToken, async (req, res) => {
 
 // add new user
 app.post('/register', async (req, res) => {
-	const userId = req.body.username.toLowerCase();
+	const username = req.body.username.toLowerCase();
 
 	// let code;
 	// let userId;
@@ -342,17 +346,17 @@ app.post('/register', async (req, res) => {
 	// 	userExists = await db.isPresent(User, userId);
 	// } while (userExists);
 
-	if (await isPresent(User, userId)) {
+	if (await isPresent(User, username)) {
 		return res.status(400).send('This username has already been taken');
 	}
 
 	const user = {
-		userId,
+		username,
 		password: await bcrypt.hash(req.body.password, 10),
 	};
 
 	await User.create(user);
-	return res.status(201).send(userId);
+	return res.status(201).send(username);
 });
 
 // init
