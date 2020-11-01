@@ -288,7 +288,7 @@ app.post('/conversations/new', auth.authToken, async (req, res) => {
 		return res.status(404).send('User not found');
 	}
 
-	const conversationId = db.buildConversationId(userId, friendId);
+	const conversationId = db.buildPairId(userId, friendId);
 
 	if (await db.isPresent(Conversation, conversationId)) {
 		return res.status(400).send('Conversation exists already');
@@ -300,7 +300,7 @@ app.post('/conversations/new', auth.authToken, async (req, res) => {
 		friendId,
 	};
 	const conversationRight = {
-		conversationId,
+		conversationId: db.buildPairId(friendId, userId),
 		userId: friendId,
 		friendId: userId,
 	};
