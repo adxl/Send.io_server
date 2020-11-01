@@ -65,9 +65,9 @@ app.get('/users/me', auth.authToken, async (req, res) => {
 	// 	return res.status(404).send('User does not exist anymore');
 	// }
 
-	if (await isNotPresent(User, username)) {
-		return res.status(404).send('User does not exist anymore');
-	}
+	// if (await isNotPresent(User, username)) {
+	// 	return res.status(404).send('User does not exist anymore');
+	// }
 
 	return res.status(200).json({ username });
 });
@@ -101,39 +101,40 @@ app.get('/users/:x', auth.authToken, async (req, res) => {
 });
 
 app.get('/invites', auth.authToken, async (req, res) => {
-	const { userId } = req;
+	const { username } = req;
 
 	const invites = await Invite.findAll({
-		attributes: ['userId'],
+		attributes: ['user'],
 		where: {
-			friendId: userId,
+			friend: username,
 		},
 	});
 
-	const invitesList = invites.map((i) => db.splitUserId(i.userId));
+	// const invitesList = invites.map((i) => db.splitUserId(i.userId));
 
-	return res.status(200).json(invitesList);
+	// return res.status(200).json(invitesList);
+	return res.status(200).send(invites);
 });
 
 // send an friend request
 app.post('/invites/send', auth.authToken, async (req, res) => {
-	const { userId } = req;
-	const { friendId } = req.body;
-	const inviteId = db.buildPairId(userId, friendId);
+	const { username } = req;
+	const { friend } = req.body;
+	const inviteId = db.buildPairId(username, friend);
 
-	if (userId === friendId) {
+	if (username === friend) {
 		return res.status(400).send('You can\'t invite yourself');
 	}
 
-	if (await db.isNotPresent(User, friendId)) {
+	if (await db.isNotPresent(User, friend)) {
 		return res.status(404).send('User not found');
 	}
 
-	if (await db.isPresent(Friendship, db.buildPairId(userId, friendId))) {
+	if (await db.isPresent(Friendship, db.buildPairId(username, friend))) {
 		return res.status(400).send('You are already friends');
 	}
 
-	if (await db.isPresent(Invite, db.buildPairId(friendId, userId))) {
+	if (await db.isPresent(Invite, db.buildPairId(friend, username))) {
 		return res.status(400).send('You have already been invited');
 	}
 
@@ -142,9 +143,9 @@ app.post('/invites/send', auth.authToken, async (req, res) => {
 	}
 
 	const invite = {
-		userId,
-		friendId,
-		inviteId,
+		id: inviteId,
+		user: username,
+		friend,
 	};
 
 	await Invite.create(invite);
@@ -153,9 +154,9 @@ app.post('/invites/send', auth.authToken, async (req, res) => {
 
 // cancel a sent request
 app.post('/invites/cancel', auth.authToken, async (req, res) => {
-	const { userId } = req;
-	const { friendId } = req.body;
-	const inviteId = db.buildPairId(userId, friendId);
+	const { username } = req;
+	const { friend } = req.body;
+	const inviteId = db.buildPairId(username, friend);
 
 	if (await db.isNotPresent(Invite, inviteId)) {
 		return res.status(404).send('Invite does not exist');
@@ -163,7 +164,7 @@ app.post('/invites/cancel', auth.authToken, async (req, res) => {
 
 	await Invite.destroy({
 		where: {
-			inviteId,
+			id: inviteId,
 		},
 	});
 	return res.status(200).send('Invite canceled');
@@ -171,9 +172,9 @@ app.post('/invites/cancel', auth.authToken, async (req, res) => {
 
 // accept a friend request
 app.post('/invites/accept', auth.authToken, async (req, res) => {
-	const { userId } = req;
-	const { friendId } = req.body;
-	const inviteId = db.buildPairId(friendId, userId);
+	const { username } = req;
+	const { friend } = req.body;
+	const inviteId = db.buildPairId(friend, username);
 
 	if (await db.isNotPresent(Invite, inviteId)) {
 		return res.status(400).send('Invite does not exist');
@@ -181,19 +182,19 @@ app.post('/invites/accept', auth.authToken, async (req, res) => {
 
 	await Invite.destroy({
 		where: {
-			inviteId,
+			id: inviteId,
 		},
 	});
 
 	const friendshipUserSide = {
-		userId,
-		friendId,
-		friendshipId: db.buildPairId(userId, friendId),
+		id: db.buildPairId(username, friend),
+		user: username,
+		friend,
 	};
 	const friendshipFriendSide = {
-		userId: friendId,
-		friendId: userId,
-		friendshipId: db.buildPairId(friendId, userId),
+		id: db.buildPairId(friend, username),
+		user: friend,
+		friend: username,
 	};
 
 	await Friendship.create(friendshipUserSide);
@@ -203,9 +204,9 @@ app.post('/invites/accept', auth.authToken, async (req, res) => {
 
 // deny a friend request
 app.post('/invites/deny', auth.authToken, async (req, res) => {
-	const { userId } = req;
-	const { friendId } = req.body;
-	const inviteId = db.buildPairId(friendId, userId);
+	const { username } = req;
+	const { friend } = req.body;
+	const inviteId = db.buildPairId(friend, username);
 
 	if (await db.isNotPresent(Invite, inviteId)) {
 		return res.status(404).send('Invite does not exist');
@@ -213,7 +214,7 @@ app.post('/invites/deny', auth.authToken, async (req, res) => {
 
 	await Invite.destroy({
 		where: {
-			inviteId,
+			id: inviteId,
 		},
 	});
 	return res.status(200).send('Invite denied');
