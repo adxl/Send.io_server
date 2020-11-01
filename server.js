@@ -7,14 +7,14 @@ const app = express();
 
 const http = require('http').createServer(app);
 const cors = require('cors');
-const io = require('socket.io')(http);
+// const io = require('socket.io')(http);
 const bcrypt = require('bcrypt');
 
 app.use(express.json());
 app.use(cors());
 
 // exports
-const { Op } = require('sequelize');
+// const { Op } = require('sequelize');
 const db = require('./db');
 const auth = require('./auth.js');
 const User = require('./models/user');
@@ -57,17 +57,15 @@ app.get('/users', async (req, res) => {
 
 // get current user (from token)
 app.get('/users/me', auth.authToken, async (req, res) => {
-	const { userId } = req;
+	const { username } = req;
 
-	const user = await User.findByPk(userId);
+	const user = await User.findByPk(username);
 
-	const data = {
-		id: user.userId,
-		username: user.username,
-		code: user.code,
-	};
+	if (user == null) {
+		return res.status(404).send('User does not exist anymore');
+	}
 
-	return res.status(200).json(data);
+	return res.status(200).json({ username: user.username });
 });
 
 // get public user
@@ -332,21 +330,23 @@ app.get('/messages', auth.authToken, async (req, res) => {
 
 // add new user
 app.post('/register', async (req, res) => {
-	const { username } = req.body;
+	const userId = req.body.username.toLowerCase();
 
-	let code;
-	let userId;
-	let userExists;
+	// let code;
+	// let userId;
+	// let userExists;
 
-	do {
-		code = Math.floor(Math.random() * (9999 - 1000)) + 1000;
-		userId = `${username}#${code}`;
-		userExists = await db.isPresent(User, userId);
-	} while (userExists);
+	// do {
+	// 	code = Math.floor(Math.random() * (9999 - 1000)) + 1000;
+	// 	userId = `${username}#${code}`;
+	// 	userExists = await db.isPresent(User, userId);
+	// } while (userExists);
+
+	if (await isPresent(User, userId)) {
+		return res.status(400).send('This username has already been taken');
+	}
 
 	const user = {
-		username,
-		code,
 		userId,
 		password: await bcrypt.hash(req.body.password, 10),
 	};
