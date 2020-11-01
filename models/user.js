@@ -17,6 +17,7 @@ const User = db.sequelize.define('user', {
 }, { timestamps: false });
 
 // User has many friendships : usr->friend  /  friend->usr
+
 User.hasMany(Friendship, {
 	foreignKey: {
 		name: 'userId',
@@ -54,7 +55,7 @@ User.hasMany(Invite, {
 
 User.hasMany(Conversation, {
 	foreignKey: {
-		name: 'userId',
+		name: 'firstUser',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',
@@ -62,7 +63,7 @@ User.hasMany(Conversation, {
 
 User.hasMany(Conversation, {
 	foreignKey: {
-		name: 'friendId',
+		name: 'secondUser',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',

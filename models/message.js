@@ -14,7 +14,6 @@ const Message = db.sequelize.define('message', {
 	},
 	text: {
 		type: DataTypes.TEXT,
-		defaultValue: '',
 		allowNull: false,
 	},
 }, { timestamps: false });
