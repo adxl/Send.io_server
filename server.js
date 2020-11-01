@@ -77,9 +77,7 @@ app.get('/users/:x', auth.authToken, async (req, res) => {
 	const isSelf = username === x;
 
 	const data = {
-		id: user.userId,
 		username: user.username,
-		code: user.code,
 		isFriend,
 		isRequested,
 		isInvitedBy,
