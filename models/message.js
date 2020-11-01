@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const db = require('../db');
 
 const Message = db.sequelize.define('message', {
-	messageId: {
+	id: {
 		type: DataTypes.UUID,
 		defaultValue: db.sequelize.UUIDV4,
 		allowNull: false,
