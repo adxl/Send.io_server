@@ -58,17 +58,6 @@ app.get('/users', async (req, res) => {
 // get current user (from token)
 app.get('/users/me', auth.authToken, async (req, res) => {
 	const { username } = req;
-
-	// const user = await User.findByPk(username);
-
-	// if (user == null) {
-	// 	return res.status(404).send('User does not exist anymore');
-	// }
-
-	// if (await isNotPresent(User, username)) {
-	// 	return res.status(404).send('User does not exist anymore');
-	// }
-
 	return res.status(200).json({ username });
 });
 
@@ -110,9 +99,6 @@ app.get('/invites', auth.authToken, async (req, res) => {
 		},
 	});
 
-	// const invitesList = invites.map((i) => db.splitUserId(i.userId));
-
-	// return res.status(200).json(invitesList);
 	return res.status(200).send(invites);
 });
 
@@ -231,9 +217,6 @@ app.get('/friends', auth.authToken, async (req, res) => {
 		},
 	});
 
-	// const friendsList = friends.map((f) => db.splitUserId(f.friendId));
-
-	// return res.status(200).json(friendsList);
 	return res.status(200).json(friends);
 });
 
