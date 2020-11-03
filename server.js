@@ -247,18 +247,19 @@ app.post('/friends/unfriend', auth.authToken, async (req, res) => {
 
 // get user conversations
 app.get('/conversations', auth.authToken, async (req, res) => {
-	const { userId } = req;
+	const { username } = req;
 
 	const conversations = await Conversation.findAll({
-		attributes: ['conversationId'],
+		attributes: ['id'],
 		where: {
-			userId,
+			user: username,
 		},
 	});
 
-	const conversationsList = conversations.map((c) => db.splitPairId(c.conversationId));
+	// const conversationsList = conversations.map((c) => db.splitPairId(c.conversationId));
 
-	return res.status(200).json(conversationsList);
+	// return res.status(200).json(conversationsList);
+	return res.status(200).json(conversations);
 });
 
 app.post('/conversations/new', auth.authToken, async (req, res) => {
