@@ -9,7 +9,7 @@ const cors = require('cors');
 // const io = require('socket.io')(http);
 const bcrypt = require('bcrypt');
 
-// const { Op } = require('sequelize');
+const { Op } = require('sequelize');
 const db = require('./db');
 const auth = require('./auth.js');
 
@@ -247,11 +247,19 @@ app.post('/friends/unfriend', auth.authToken, async (req, res) => {
 app.get('/conversations', auth.authToken, async (req, res) => {
 	const { username } = req;
 
-	const conversations = await Conversation.findAll({
-		attributes: ['id'],
+	let conversations = await Conversation.findAll({
+		attributes: ['user', 'friend'],
 		where: {
-			user: username,
+			id: {
+				[Op.substring]: username,
+			},
 		},
+	});
+
+	conversations = conversations.map((c) => {
+		if (c.user === username) {
+			return c.friend;
+		} return c.user;
 	});
 
 	return res.status(200).json(conversations);
@@ -269,31 +277,21 @@ app.post('/conversations/new', auth.authToken, async (req, res) => {
 		return res.status(404).send('User not found');
 	}
 
-	const conversationId = db.buildId(username, friend);
+	const conversation = db.buildConversationObject(username, friend);
 
-	if (await db.isPresent(Conversation, conversationId)) {
+	if (await db.isPresent(Conversation, conversation.id)) {
 		return res.status(400).send('Conversation exists already');
 	}
 
-	const conversationLeft = {
-		id: conversationId,
-		user: username,
-		friend,
-	};
-	const conversationRight = {
-		id: db.buildId(friend, username),
-		user: friend,
-		friend: username,
-	};
-
-	await Conversation.create(conversationLeft);
-	await Conversation.create(conversationRight);
+	await Conversation.create(conversation);
 	return res.status(201).send('Conversation created');
 });
 
 // get conversation messages
-app.get('/conversations/:id/messages', auth.authToken, async (req, res) => {
-	const conversationId = req.params.id;
+app.get('/conversations/:friend', auth.authToken, async (req, res) => {
+	const { username } = req;
+	const { friend } = req.params;
+	const conversationId = db.buildOneWayId(username, friend);
 
 	if (await db.isNotPresent(Conversation, conversationId)) {
 		return res.status(404).send('This conversation does not exist');

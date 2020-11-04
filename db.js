@@ -21,32 +21,37 @@ const isNotPresent = async (model, id) => await model.findByPk(id) == null;
 
 const buildPairId = (id1, id2) => `${id1}__${id2}`;
 
-const buildConversationId = (userId, friendId) => {
+const buildOneWayId = (userId, friendId) => {
 	if (userId < friendId) {
 		return `${userId}__${friendId}`;
 	}
 	return `${friendId}__${userId}`;
 };
 
-// const splitUserId = (id) => {
-// 	const infos = id.split('#');
+const buildConversationObject = (userId, friendId) => {
+	if (userId < friendId) {
+		return {
+			id: `${userId}__${friendId}`,
+			user: userId,
+			friend: friendId,
+		};
+	}
+	return {
+		id: `${friendId}__${userId}`,
+		user: friendId,
+		friend: userId,
+	};
+};
+
+// const splitPairId = (id) => {
+// 	const infos = id.split('__');
 // 	const data = {
-// 		username: infos[0],
-// 		code: infos[1],
+// 		user: infos[0],
+// 		friend: infos[1],
 // 		id,
 // 	};
 // 	return data;
 // };
-
-const splitPairId = (id) => {
-	const infos = id.split('__');
-	const data = {
-		user: infos[0],
-		friend: infos[1],
-		id,
-	};
-	return data;
-};
 
 module.exports = {
 	sequelize,
@@ -54,7 +59,8 @@ module.exports = {
 	isPresent,
 	isNotPresent,
 	buildPairId,
-	buildConversationId,
+	buildOneWayId,
+	buildConversationObject,
 	// splitUserId,
-	splitPairId,
+	// splitPairId,
 };
