@@ -13,7 +13,9 @@ app.use(cors());
 
 const { Op } = require('sequelize');
 const db = require('./db');
-const { authRouter, authenticate } = require('./auth.js');
+
+const { authRouter, authenticate } = require('./auth');
+const { userRouter } = require('./routes/userRoutes');
 
 /* models */
 const User = require('./models/user');
@@ -22,69 +24,16 @@ const Invite = require('./models/invite');
 const Conversation = require('./models/conversation');
 const Message = require('./models/message');
 
-/* !DEV BLOCK! */
 console.clear();
 console.log('*************');
-
-// get list of users
-app.get('/users', async (req, res) => {
-	const users = await User.findAll();
-	return res.status(200).json(users);
-});
-
-/* !END OF DEV BLOCK! */
-
-// socket
-// io.on('connect', (socket) => {
-// 	const { id } = socket.handshake.query;
-// 	console.log(`${id} connected`);
-// 	socket.join(id);
-
-// 	socket.on('send-message', (data) => {
-// 		const { sender } = data;
-// 		const { message } = data;
-
-// 		io.emit('receive-message', `${sender} said : ${message}`);
-// 		console.log(`${sender} said : ${message}`);
-// 	});
-
-// 	socket.on('disconnect', () => console.log(`${id} left`));
-// });
 
 /* Authentication routes */
 app.use(authRouter);
 
-// get current user (from token)
-app.get('/users/me', authenticate, async (req, res) => {
-	const { username } = req;
-	return res.status(200).json({ username });
-});
 
-// get public user
-app.get('/users/:x', authenticate, async (req, res) => {
-	const { username } = req;
-	const { x } = req.params;
 
-	if (await db.isNotPresent(User, x)) {
-		return res.status(404).send('User not found');
-	}
-
-	const user = await User.findByPk(x);
-	const isFriend = await db.isPresent(Friendship, db.buildPairId(username, x));
-	const isRequested = await db.isPresent(Invite, db.buildPairId(username, x));
-	const isInvitedBy = await db.isPresent(Invite, db.buildPairId(x, username));
-	const isSelf = username === x;
-
-	const data = {
-		username: user.username,
-		isFriend,
-		isRequested,
-		isInvitedBy,
-		isSelf,
-	};
-
-	return res.status(200).json(data);
-});
+/* User related routes */
+app.use('/users', userRouter);
 
 app.get('/invites', authenticate, async (req, res) => {
 	const { username } = req;
