@@ -13,6 +13,7 @@ app.use(cors());
 
 const { Op } = require('sequelize');
 const db = require('./db');
+
 const { authRouter, authenticate } = require('./auth');
 const { userRouter } = require('./routes/userRoutes');
 
@@ -28,6 +29,8 @@ console.log('*************');
 
 /* Authentication routes */
 app.use(authRouter);
+
+
 
 /* User related routes */
 app.use('/users', userRouter);
