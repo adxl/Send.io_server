@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-// dep
 const express = require('express');
 
 const app = express();
@@ -10,10 +9,6 @@ const cors = require('cors');
 // const io = require('socket.io')(http);
 const bcrypt = require('bcrypt');
 
-app.use(express.json());
-app.use(cors());
-
-// exports
 // const { Op } = require('sequelize');
 const db = require('./db');
 const auth = require('./auth.js');
@@ -24,7 +19,9 @@ const { isPresent, buildPairId, isNotPresent } = require('./db');
 const Conversation = require('./models/conversation');
 const Message = require('./models/message');
 
+app.use(express.json());
 app.use(auth.router);
+app.use(cors());
 
 /* !DEV BLOCK! */
 console.clear();
@@ -256,9 +253,6 @@ app.get('/conversations', auth.authToken, async (req, res) => {
 		},
 	});
 
-	// const conversationsList = conversations.map((c) => db.splitPairId(c.conversationId));
-
-	// return res.status(200).json(conversationsList);
 	return res.status(200).json(conversations);
 });
 
@@ -298,7 +292,6 @@ app.post('/conversations/new', auth.authToken, async (req, res) => {
 
 // get conversation messages
 app.get('/conversations/:id/messages', auth.authToken, async (req, res) => {
-	// const { userId } = req;
 	const conversationId = req.params.id;
 
 	if (await isNotPresent(Conversation, conversationId)) {
@@ -323,16 +316,6 @@ app.get('/conversations/:id/messages', auth.authToken, async (req, res) => {
 // add new user
 app.post('/register', async (req, res) => {
 	const username = req.body.username.toLowerCase();
-
-	// let code;
-	// let userId;
-	// let userExists;
-
-	// do {
-	// 	code = Math.floor(Math.random() * (9999 - 1000)) + 1000;
-	// 	userId = `${username}#${code}`;
-	// 	userExists = await db.isPresent(User, userId);
-	// } while (userExists);
 
 	if (await isPresent(User, username)) {
 		return res.status(400).send('This username has already been taken');
