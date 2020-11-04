@@ -6,7 +6,8 @@ const router = express.Router();
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { isPresent, isNotPresent } = require('./db');
+const { isNotPresent } = require('./db');
+
 const User = require('./models/user');
 
 router.use(express.json());
