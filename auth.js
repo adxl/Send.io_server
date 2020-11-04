@@ -6,12 +6,30 @@ const router = express.Router();
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { isNotPresent } = require('./db');
+const { isPresent, isNotPresent } = require('./db');
 
 const User = require('./models/user');
 
 router.use(express.json());
 
+// add new user
+router.post('/register', async (req, res) => {
+	const username = req.body.username.toLowerCase();
+
+	if (await isPresent(User, username)) {
+		return res.status(400).send('This username has already been taken');
+	}
+
+	const user = {
+		username,
+		password: await bcrypt.hash(req.body.password, 10),
+	};
+
+	await User.create(user);
+	return res.status(201).send(username);
+});
+
+// log user
 router.post('/login', async (req, res) => {
 	const username = req.body.username.toLowerCase();
 	const { password } = req.body;
@@ -25,13 +43,12 @@ router.post('/login', async (req, res) => {
 	return res.status(400).send('Wrong username or/and password');
 });
 
-const authToken = (req, res, next) => {
+const authenticate = (req, res, next) => {
 	const token = req.headers.authorization;
 
 	if (token == null) return res.status(401).send('No token');
 
 	jwt.verify(token, process.env.TOKEN, async (err, username) => {
-		// if (err) return res.status(403).send('Invalid token');
 		if (err || await isNotPresent(User, username)) {
 			return res.status(403).send('Invalid token');
 		}
@@ -44,6 +61,6 @@ const authToken = (req, res, next) => {
 };
 
 module.exports = {
-	router,
-	authToken,
+	authRouter: router,
+	authenticate,
 };

@@ -3,15 +3,17 @@ require('dotenv').config();
 const express = require('express');
 
 const app = express();
+app.use(express.json());
 
 const http = require('http').createServer(app);
 const cors = require('cors');
+
+app.use(cors());
 // const io = require('socket.io')(http);
-const bcrypt = require('bcrypt');
 
 const { Op } = require('sequelize');
 const db = require('./db');
-const auth = require('./auth.js');
+const { authRouter, authenticate } = require('./auth.js');
 
 /* models */
 const User = require('./models/user');
@@ -19,10 +21,6 @@ const Friendship = require('./models/friendship');
 const Invite = require('./models/invite');
 const Conversation = require('./models/conversation');
 const Message = require('./models/message');
-
-app.use(express.json());
-app.use(auth.router);
-app.use(cors());
 
 /* !DEV BLOCK! */
 console.clear();
@@ -53,14 +51,17 @@ app.get('/users', async (req, res) => {
 // 	socket.on('disconnect', () => console.log(`${id} left`));
 // });
 
+/* Authentication routes */
+app.use(authRouter);
+
 // get current user (from token)
-app.get('/users/me', auth.authToken, async (req, res) => {
+app.get('/users/me', authenticate, async (req, res) => {
 	const { username } = req;
 	return res.status(200).json({ username });
 });
 
 // get public user
-app.get('/users/:x', auth.authToken, async (req, res) => {
+app.get('/users/:x', authenticate, async (req, res) => {
 	const { username } = req;
 	const { x } = req.params;
 
@@ -85,7 +86,7 @@ app.get('/users/:x', auth.authToken, async (req, res) => {
 	return res.status(200).json(data);
 });
 
-app.get('/invites', auth.authToken, async (req, res) => {
+app.get('/invites', authenticate, async (req, res) => {
 	const { username } = req;
 
 	const invites = await Invite.findAll({
@@ -99,7 +100,7 @@ app.get('/invites', auth.authToken, async (req, res) => {
 });
 
 // send an friend request
-app.post('/invites/send', auth.authToken, async (req, res) => {
+app.post('/invites/send', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
 	const inviteId = db.buildPairId(username, friend);
@@ -135,7 +136,7 @@ app.post('/invites/send', auth.authToken, async (req, res) => {
 });
 
 // cancel a sent request
-app.post('/invites/cancel', auth.authToken, async (req, res) => {
+app.post('/invites/cancel', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
 	const inviteId = db.buildPairId(username, friend);
@@ -153,7 +154,7 @@ app.post('/invites/cancel', auth.authToken, async (req, res) => {
 });
 
 // accept a friend request
-app.post('/invites/accept', auth.authToken, async (req, res) => {
+app.post('/invites/accept', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
 	const inviteId = db.buildPairId(friend, username);
@@ -176,7 +177,7 @@ app.post('/invites/accept', auth.authToken, async (req, res) => {
 });
 
 // deny a friend request
-app.post('/invites/deny', auth.authToken, async (req, res) => {
+app.post('/invites/deny', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
 	const inviteId = db.buildPairId(friend, username);
@@ -194,7 +195,7 @@ app.post('/invites/deny', auth.authToken, async (req, res) => {
 });
 
 // get friends list
-app.get('/friends', auth.authToken, async (req, res) => {
+app.get('/friends', authenticate, async (req, res) => {
 	const { username } = req;
 
 	let friends = await Friendship.findAll({
@@ -216,7 +217,7 @@ app.get('/friends', auth.authToken, async (req, res) => {
 });
 
 // remove friend
-app.post('/friends/unfriend', auth.authToken, async (req, res) => {
+app.post('/friends/unfriend', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
 	const friendshipId = db.buildRelation(username, friend).id;
@@ -238,7 +239,7 @@ app.post('/friends/unfriend', auth.authToken, async (req, res) => {
 });
 
 // get user conversations
-app.get('/conversations', auth.authToken, async (req, res) => {
+app.get('/conversations', authenticate, async (req, res) => {
 	const { username } = req;
 
 	let conversations = await Conversation.findAll({
@@ -259,7 +260,7 @@ app.get('/conversations', auth.authToken, async (req, res) => {
 	return res.status(200).json(conversations);
 });
 
-app.post('/conversations/new', auth.authToken, async (req, res) => {
+app.post('/conversations/new', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
 
@@ -282,7 +283,7 @@ app.post('/conversations/new', auth.authToken, async (req, res) => {
 });
 
 // get conversation messages
-app.get('/conversations/:friend', auth.authToken, async (req, res) => {
+app.get('/conversations/:friend', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.params;
 	const conversationId = db.buildOneWayId(username, friend);
@@ -304,23 +305,6 @@ app.get('/conversations/:friend', auth.authToken, async (req, res) => {
 	}));
 
 	return res.status(200).json(messagesList);
-});
-
-// add new user
-app.post('/register', async (req, res) => {
-	const username = req.body.username.toLowerCase();
-
-	if (await db.isPresent(User, username)) {
-		return res.status(400).send('This username has already been taken');
-	}
-
-	const user = {
-		username,
-		password: await bcrypt.hash(req.body.password, 10),
-	};
-
-	await User.create(user);
-	return res.status(201).send(username);
 });
 
 // init
