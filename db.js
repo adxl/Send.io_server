@@ -28,7 +28,7 @@ const buildOneWayId = (userId, friendId) => {
 	return `${friendId}__${userId}`;
 };
 
-const buildConversationObject = (userId, friendId) => {
+const buildRelation = (userId, friendId) => {
 	if (userId < friendId) {
 		return {
 			id: `${userId}__${friendId}`,
@@ -43,16 +43,6 @@ const buildConversationObject = (userId, friendId) => {
 	};
 };
 
-// const splitPairId = (id) => {
-// 	const infos = id.split('__');
-// 	const data = {
-// 		user: infos[0],
-// 		friend: infos[1],
-// 		id,
-// 	};
-// 	return data;
-// };
-
 module.exports = {
 	sequelize,
 	connect,
@@ -60,7 +50,5 @@ module.exports = {
 	isNotPresent,
 	buildPairId,
 	buildOneWayId,
-	buildConversationObject,
-	// splitUserId,
-	// splitPairId,
+	buildRelation,
 };
