@@ -263,32 +263,32 @@ app.get('/conversations', auth.authToken, async (req, res) => {
 });
 
 app.post('/conversations/new', auth.authToken, async (req, res) => {
-	const { userId } = req;
-	const { friendId } = req.body;
+	const { username } = req;
+	const { friend } = req.body;
 
-	if (userId === friendId) {
+	if (username === friend) {
 		return res.status(400).send('Cannot start a conversation with yourself');
 	}
 
-	if (await db.isNotPresent(User, friendId)) {
+	if (await isNotPresent(User, friend)) {
 		return res.status(404).send('User not found');
 	}
 
-	const conversationId = db.buildPairId(userId, friendId);
+	const conversationId = db.buildPairId(username, friend);
 
 	if (await db.isPresent(Conversation, conversationId)) {
 		return res.status(400).send('Conversation exists already');
 	}
 
 	const conversationLeft = {
-		conversationId,
-		userId,
-		friendId,
+		id: conversationId,
+		user: username,
+		friend,
 	};
 	const conversationRight = {
-		conversationId: db.buildPairId(friendId, userId),
-		userId: friendId,
-		friendId: userId,
+		id: db.buildPairId(friend, username),
+		user: friend,
+		friend: username,
 	};
 
 	await Conversation.create(conversationLeft);
@@ -297,20 +297,24 @@ app.post('/conversations/new', auth.authToken, async (req, res) => {
 });
 
 // get conversation messages
-app.get('/messages', auth.authToken, async (req, res) => {
+app.get('/conversations/:id/messages', auth.authToken, async (req, res) => {
 	// const { userId } = req;
-	const { ConversationId } = req.body;
+	const conversationId = req.params.id;
+
+	if (await isNotPresent(Conversation, conversationId)) {
+		return res.status(404).send('This conversation does not exist');
+	}
 
 	const messages = await Message.findAll({
 		attributes: ['sender', 'text'],
 		where: {
-			ConversationId,
+			conversationId,
 		},
 	});
 
-	const messagesList = messages.map((c) => ({
-		sender: c.sender,
-		text: c.text,
+	const messagesList = messages.map((m) => ({
+		sender: m.sender,
+		text: m.text,
 	}));
 
 	return res.status(200).json(messagesList);

@@ -51,11 +51,11 @@ User.hasMany(Invite, {
 	onDelete: 'CASCADE',
 });
 
-// User has many conversations : user->friend only : sorted
+// User has many conversations : user->friend friend->user
 
 User.hasMany(Conversation, {
 	foreignKey: {
-		name: 'firstUser',
+		name: 'user',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',
@@ -63,7 +63,7 @@ User.hasMany(Conversation, {
 
 User.hasMany(Conversation, {
 	foreignKey: {
-		name: 'secondUser',
+		name: 'friend',
 		allowNull: false,
 	},
 	onDelete: 'CASCADE',
