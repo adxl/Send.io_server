@@ -11,11 +11,12 @@ const cors = require('cors');
 app.use(cors());
 // const io = require('socket.io')(http);
 
-const { Op } = require('sequelize');
 const db = require('./db');
 
+/* routers */
 const { authRouter, authenticate } = require('./auth');
 const { userRouter } = require('./routes/userRoutes');
+const { friendshipRouter } = require('./routes/friendshipRoutes');
 
 /* models */
 const User = require('./models/user');
@@ -30,162 +31,11 @@ console.log('*************');
 /* Authentication routes */
 app.use(authRouter);
 
-
-
 /* User related routes */
 app.use('/users', userRouter);
 
-app.get('/invites', authenticate, async (req, res) => {
-	const { username } = req;
-
-	const invites = await Invite.findAll({
-		attributes: ['user'],
-		where: {
-			friend: username,
-		},
-	});
-
-	return res.status(200).send(invites);
-});
-
-// send an friend request
-app.post('/invites/send', authenticate, async (req, res) => {
-	const { username } = req;
-	const { friend } = req.body;
-	const inviteId = db.buildPairId(username, friend);
-
-	if (username === friend) {
-		return res.status(400).send('You can\'t invite yourself');
-	}
-
-	if (await db.isNotPresent(User, friend)) {
-		return res.status(404).send('User not found');
-	}
-
-	if (await db.isPresent(Friendship, db.buildPairId(username, friend))) {
-		return res.status(400).send('You are already friends');
-	}
-
-	if (await db.isPresent(Invite, db.buildPairId(friend, username))) {
-		return res.status(400).send('You have already been invited');
-	}
-
-	if (await db.isPresent(Invite, inviteId)) {
-		return res.status(400).send('Invite already sent');
-	}
-
-	const invite = {
-		id: inviteId,
-		user: username,
-		friend,
-	};
-
-	await Invite.create(invite);
-	return res.status(201).send('Invite sent');
-});
-
-// cancel a sent request
-app.post('/invites/cancel', authenticate, async (req, res) => {
-	const { username } = req;
-	const { friend } = req.body;
-	const inviteId = db.buildPairId(username, friend);
-
-	if (await db.isNotPresent(Invite, inviteId)) {
-		return res.status(404).send('Invite does not exist');
-	}
-
-	await Invite.destroy({
-		where: {
-			id: inviteId,
-		},
-	});
-	return res.status(200).send('Invite canceled');
-});
-
-// accept a friend request
-app.post('/invites/accept', authenticate, async (req, res) => {
-	const { username } = req;
-	const { friend } = req.body;
-	const inviteId = db.buildPairId(friend, username);
-
-	if (await db.isNotPresent(Invite, inviteId)) {
-		return res.status(400).send('Invite does not exist');
-	}
-
-	const friendship = db.buildRelation(username, friend);
-
-	await Friendship.create(friendship);
-
-	await Invite.destroy({
-		where: {
-			id: inviteId,
-		},
-	});
-
-	return res.status(201).send('Invite accepted');
-});
-
-// deny a friend request
-app.post('/invites/deny', authenticate, async (req, res) => {
-	const { username } = req;
-	const { friend } = req.body;
-	const inviteId = db.buildPairId(friend, username);
-
-	if (await db.isNotPresent(Invite, inviteId)) {
-		return res.status(404).send('Invite does not exist');
-	}
-
-	await Invite.destroy({
-		where: {
-			id: inviteId,
-		},
-	});
-	return res.status(200).send('Invite denied');
-});
-
-// get friends list
-app.get('/friends', authenticate, async (req, res) => {
-	const { username } = req;
-
-	let friends = await Friendship.findAll({
-		attributes: ['user', 'friend'],
-		where: {
-			id: {
-				[Op.substring]: username,
-			},
-		},
-	});
-
-	friends = friends.map((f) => {
-		if (f.user === username) {
-			return f.friend;
-		} return f.user;
-	});
-
-	return res.status(200).json(friends);
-});
-
-// remove friend
-app.post('/friends/unfriend', authenticate, async (req, res) => {
-	const { username } = req;
-	const { friend } = req.body;
-	const friendshipId = db.buildRelation(username, friend).id;
-
-	console.log(username);
-	console.log(friendshipId);
-
-	if (await db.isNotPresent(Friendship, friendshipId)) {
-		return res.status(404).send('Friend not found');
-	}
-
-	await Friendship.destroy({
-		where: {
-			id: friendshipId,
-		},
-	});
-
-	return res.status(200).send('Removed friend');
-});
+/* Friendship related routes */
+app.use(friendshipRouter);
 
 // get user conversations
 app.get('/conversations', authenticate, async (req, res) => {
