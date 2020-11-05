@@ -9,8 +9,10 @@ const sequelize = new Sequelize(process.env.PG_URL, {
 const connect = async () => {
 	try {
 		await sequelize.authenticate();
-		console.log('Connected');
 		await sequelize.sync({ alter: true });
+		console.clear();
+		console.log('*************');
+		console.log('Connected');
 	} catch (error) {
 		console.error('ERROR', error);
 	}

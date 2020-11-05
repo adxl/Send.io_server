@@ -1,33 +1,20 @@
 require('dotenv').config();
 
 const express = require('express');
-
-const app = express();
-app.use(express.json());
-
-const http = require('http').createServer(app);
 const cors = require('cors');
 
-app.use(cors());
-// const io = require('socket.io')(http);
-
-const db = require('./db');
+const { connect } = require('./db');
 
 /* routers */
-const { authRouter, authenticate } = require('./auth');
+const { authRouter } = require('./auth');
 const { userRouter } = require('./routes/userRoutes');
 const { friendshipRouter } = require('./routes/friendshipRoutes');
 const { messagingRouter } = require('./routes/messagingRoutes');
 
-/* models */
-const User = require('./models/user');
-const Friendship = require('./models/friendship');
-const Invite = require('./models/invite');
-const Conversation = require('./models/conversation');
-const Message = require('./models/message');
+const app = express();
 
-console.clear();
-console.log('*************');
+app.use(cors());
+app.use(express.json());
 
 /* Authentication routes */
 app.use(authRouter);
@@ -43,4 +30,4 @@ app.use('/conversations', messagingRouter);
 
 // init
 const port = process.env.PORT || 4000;
-http.listen(port, () => db.connect());
+app.listen(port, () => connect());
