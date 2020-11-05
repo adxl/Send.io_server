@@ -19,6 +19,7 @@
         ],
         "no-mixed-spaces-and-tabs": "warn",
         "no-tabs": "off",
-        "no-await-in-loop": "off"
+        "no-await-in-loop": "off",
+        "object-curly-newline":"off"
     }
 }
