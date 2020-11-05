@@ -26,7 +26,8 @@ router.post('/register', async (req, res) => {
 	};
 
 	await User.create(user);
-	return res.status(201).send(username);
+	const token = jwt.sign(username, process.env.TOKEN);
+	return res.status(201).send(token);
 });
 
 // log user
