@@ -32,6 +32,7 @@ router.get('/', authenticate, async (req, res) => {
 	return res.status(200).json(conversations);
 });
 
+// create a new conversation between 2 users
 router.post('/new', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
@@ -52,6 +53,26 @@ router.post('/new', authenticate, async (req, res) => {
 
 	await Conversation.create(conversation);
 	return res.status(201).send('Conversation created');
+});
+
+// delete a conversation between 2 users
+router.delete('/:friend', authenticate, async (req, res) => {
+	const { username } = req;
+	const { friend } = req.params;
+
+	const conversation = buildRelation(username, friend);
+
+	if (await isNotPresent(Conversation, conversation.id)) {
+		return res.status(404).send('Conversation does not exist');
+	}
+
+	await Conversation.destroy({
+		where: {
+			id: conversation.id,
+		},
+	});
+
+	return res.status(200).send('Conversation deleted');
 });
 
 // get conversation messages
