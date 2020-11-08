@@ -86,13 +86,14 @@ router.get('/:friend/messages', authenticate, async (req, res) => {
 	}
 
 	const messages = await Message.findAll({
-		attributes: ['sender', 'text'],
+		attributes: ['id', 'sender', 'text'],
 		where: {
 			conversationId,
 		},
 	});
 
 	const messagesList = messages.map((m) => ({
+		id: m.id,
 		sender: m.sender,
 		text: m.text,
 	}));
