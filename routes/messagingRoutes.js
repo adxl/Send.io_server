@@ -15,7 +15,7 @@ router.get('/', authenticate, async (req, res) => {
 	const { username } = req;
 
 	let conversations = await Conversation.findAll({
-		attributes: ['user', 'friend'],
+		attributes: ['id', 'user', 'friend'],
 		where: {
 			id: {
 				[Op.substring]: username,
@@ -25,8 +25,8 @@ router.get('/', authenticate, async (req, res) => {
 
 	conversations = conversations.map((c) => {
 		if (c.user === username) {
-			return c.friend;
-		} return c.user;
+			return { id: c.id, friend: c.friend };
+		} return { id: c.id, friend: username };
 	});
 
 	return res.status(200).json(conversations);
