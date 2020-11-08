@@ -76,7 +76,7 @@ router.delete('/:friend', authenticate, async (req, res) => {
 });
 
 // get conversation messages
-router.get('/:friend', authenticate, async (req, res) => {
+router.get('/:friend/messages', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.params;
 	const conversationId = buildOneWayId(username, friend);

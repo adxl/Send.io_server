@@ -13,6 +13,8 @@ const { userRouter } = require('./routes/userRoutes');
 const { friendshipRouter } = require('./routes/friendshipRoutes');
 const { messagingRouter } = require('./routes/messagingRoutes');
 
+const Message = require('./models/message');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
@@ -32,20 +34,22 @@ app.use(friendshipRouter);
 /* Messaging related routes */
 app.use('/conversations', messagingRouter);
 
+const createMessage = async (message) => {
+	await Message.create(message);
+};
+
 io.on('connect', (socket) => {
-	const { id } = socket.handshake.query;
-	console.log(`${id} connected`);
-	socket.join(id);
+	const { username } = socket.handshake.query;
 
-	socket.on('send-message', (data) => {
-		const { sender } = data;
-		const { message } = data;
+	console.log(`${username} connected`);
+	socket.join(username);
 
-		io.emit('receive-message', `${sender} said : ${message}`);
-		console.log(`${sender} said : ${message}`);
+	socket.on('send-message', (m) => {
+		createMessage(m);
+		// io.emit('receive-message', `${m.sender} said : ${m.text} to ${m.friend}`);
 	});
 
-	socket.on('disconnect', () => console.log(`${id} left`));
+	socket.on('disconnect', () => console.log(`${username} left`));
 });
 
 // init
