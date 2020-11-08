@@ -26,7 +26,7 @@ router.get('/', authenticate, async (req, res) => {
 	conversations = conversations.map((c) => {
 		if (c.user === username) {
 			return { id: c.id, friend: c.friend };
-		} return { id: c.id, friend: username };
+		} return { id: c.id, friend: c.user };
 	});
 
 	return res.status(200).json(conversations);
