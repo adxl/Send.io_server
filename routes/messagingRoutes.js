@@ -41,6 +41,8 @@ router.get('/', authenticate, async (req, res) => {
 		} return { id: c.id, friend: c.user, lastMessage };
 	});
 
+	conversations = await Promise.all(conversations);
+
 	return res.status(200).json(conversations);
 });
 
