@@ -16,6 +16,10 @@ const Message = db.sequelize.define('message', {
 		type: DataTypes.TEXT,
 		allowNull: false,
 	},
-}, { timestamps: false });
+}, {
+	timestamps: true,
+	createdAt: true,
+	updatedAt: false,
+});
 
 module.exports = Message;
