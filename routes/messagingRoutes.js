@@ -114,6 +114,27 @@ router.get('/:friend/messages', authenticate, async (req, res) => {
 	return res.status(200).json(messagesList);
 });
 
+router.get('/:friend/messages/last', authenticate, async (req, res) => {
+	const { username } = req;
+	const { friend } = req.params;
+	const conversationId = buildOneWayId(username, friend);
+
+	if (await isNotPresent(Conversation, conversationId)) {
+		return res.status(404).send('This conversation does not exist');
+	}
+
+	const message = await Message.findOne({
+		where: {
+			conversationId,
+		},
+		order: [
+			['createdAt', 'DESC'],
+		],
+	});
+
+	return res.status(200).json(message);
+});
+
 module.exports = {
 	messagingRouter: router,
 };
