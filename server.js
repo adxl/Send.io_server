@@ -41,7 +41,7 @@ const createMessage = async (message) => {
 io.on('connect', (socket) => {
 	const { username } = socket.handshake.query;
 
-	console.log(`${username} connected`);
+	// console.log(`${username} connected`);
 	socket.join(username);
 
 	socket.on('send-message', (m) => {

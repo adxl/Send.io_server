@@ -9,6 +9,7 @@ const { isPresent, isNotPresent, buildOneWayId, buildRelation } = require('../db
 const User = require('../models/user');
 const Conversation = require('../models/conversation');
 const Message = require('../models/message');
+const Friendship = require('../models/friendship');
 
 // get user conversations
 router.get('/', authenticate, async (req, res) => {
@@ -32,7 +33,7 @@ router.get('/', authenticate, async (req, res) => {
 	return res.status(200).json(conversations);
 });
 
-// create a new conversation between 2 users
+// create a new conversation between 2 users, (should be friends)
 router.post('/new', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;
@@ -43,6 +44,11 @@ router.post('/new', authenticate, async (req, res) => {
 
 	if (await isNotPresent(User, friend)) {
 		return res.status(404).send('User not found');
+	}
+
+	const friendshipId = buildOneWayId(username, friend);
+	if (await isNotPresent(Friendship, friendshipId)) {
+		return res.status(400).send(`${friend} is not your friend yet, add him now!`);
 	}
 
 	const conversation = buildRelation(username, friend);
