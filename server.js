@@ -46,7 +46,7 @@ io.on('connect', (socket) => {
 
 	socket.on('send-message', (m) => {
 		createMessage(m);
-		// io.emit('receive-message', `${m.sender} said : ${m.text} to ${m.friend}`);
+		io.emit('receive-message');
 	});
 
 	socket.on('disconnect', () => console.log(`${username} left`));
