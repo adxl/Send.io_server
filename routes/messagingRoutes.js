@@ -97,7 +97,7 @@ router.get('/:friend/messages', authenticate, async (req, res) => {
 			conversationId,
 		},
 		order: [
-			['id', 'ASC'],
+			['createdAt', 'ASC'],
 		],
 	});
 
