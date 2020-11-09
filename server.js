@@ -39,17 +39,18 @@ const createMessage = async (message) => {
 };
 
 io.on('connect', (socket) => {
+	const { id } = socket.handshake.query;
 	const { username } = socket.handshake.query;
 
-	// console.log(`${username} connected`);
-	socket.join(username);
+	socket.join(id);
+	console.log(`>>>>>> ${username} joined ${id}`);
 
 	socket.on('send-message', (m) => {
 		createMessage(m);
-		io.emit('receive-message');
+		socket.to(id).emit('receive-message');
 	});
 
-	socket.on('disconnect', () => console.log(`${username} left`));
+	socket.on('disconnect', () => console.log(`------ ${username} in ${id} left`));
 });
 
 // init
