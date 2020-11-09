@@ -103,6 +103,10 @@ router.get('/:friend/messages', authenticate, async (req, res) => {
 
 	const messagesList = messages.map((m) => ({
 		id: m.id,
+		createdAt: {
+			day: JSON.stringify(m.createdAt).substr(1, 10),
+			time: JSON.stringify(m.createdAt).substr(12, 5),
+		},
 		sender: m.sender,
 		text: m.text,
 	}));
