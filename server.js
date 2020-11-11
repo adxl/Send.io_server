@@ -34,23 +34,24 @@ app.use(friendshipRouter);
 /* Messaging related routes */
 app.use('/conversations', messagingRouter);
 
+/* Socket */
 const createMessage = async (message) => {
 	await Message.create(message);
 };
 
 io.on('connect', (socket) => {
 	const { id } = socket.handshake.query;
-	const { username } = socket.handshake.query;
+	// const { username } = socket.handshake.query;
 
 	socket.join(id);
-	console.log(`>>>>>> ${username} joined ${id}`);
+	// console.log(`>>>>>> ${username} joined ${id}`);
 
 	socket.on('send-message', (m) => {
 		createMessage(m);
 		socket.to(id).emit('receive-message');
 	});
 
-	socket.on('disconnect', () => console.log(`------ ${username} in ${id} left`));
+	// socket.on('disconnect', () => console.log(`${username} in ${id} left`));
 });
 
 // init

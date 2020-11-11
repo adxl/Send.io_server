@@ -11,7 +11,6 @@ const Conversation = db.sequelize.define('conversation', {
 }, { timestamps: false });
 
 // Conversation has many messages
-
 Conversation.hasMany(Message, {
 	foreignKey: {
 		name: 'conversationId',

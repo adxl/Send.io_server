@@ -16,11 +16,8 @@ const connect = async () => {
 	try {
 		await sequelize.authenticate();
 		await sequelize.sync({ alter: true });
-		console.clear();
-		console.log('*************');
-		console.log('Connected');
 	} catch (error) {
-		console.error('ERROR', error);
+		console.error('Connection error: ', error);
 	}
 };
 
