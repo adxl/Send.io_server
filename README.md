@@ -1,6 +1,6 @@
 # Send<span>.</span>io
 
-[Send.io](#) is a social network made with Node.js and React.
+[Send.io](#) is a messaging application made with Node.js and React.
 
 This repository contains the source code for the server side. For the client side check it out [here](https://github.com/adxl/Send.io).
 
