@@ -1,0 +1,120 @@
+GET http://localhost:4000/ 
+
+###
+
+GET http://localhost:4000/users
+
+###
+
+GET http://localhost:4000/users/me
+Authorization: <token>
+
+###
+
+GET http://localhost:4000/users/<username>
+Authorization: <token>
+
+###
+
+GET http://localhost:4000/invites
+Authorization: <token>
+
+###
+
+POST http://localhost:4000/invites/send
+Authorization: <token>
+Content-Type: application/json
+
+{
+    "friend":""
+}
+
+###
+
+POST http://localhost:4000/invites/cancel
+Authorization: <token>
+Content-Type: application/json
+
+{
+    "friend":""
+}
+
+###
+
+POST http://localhost:4000/invites/accept
+Authorization: <token>
+Content-Type: application/json
+
+{
+    "friend":""
+}
+
+###
+
+POST http://localhost:4000/invites/deny
+Authorization: <token>
+Content-Type: application/json
+
+{
+    "friend":""
+}
+
+###
+
+GET http://localhost:4000/friends
+Authorization: <token>
+
+###
+
+POST http://localhost:4000/friends/unfriend
+Authorization: <token>
+Content-Type: application/json
+
+{
+    "friend":""
+}
+
+###
+
+GET http://localhost:4000/conversations 
+Authorization: <token>
+
+###
+
+POST http://localhost:4000/conversations/new 
+Authorization: <token>
+Content-Type: application/json
+
+{
+    "friend": ""
+}
+
+###
+
+DELETE http://localhost:4000/conversations/<username>
+Authorization: <token>
+
+###
+
+GET http://localhost:4000/conversations/<username>/messages 
+Authorization: <token>
+
+###
+
+POST http://localhost:4000/register 
+Content-Type: application/json
+
+{
+    "username":"",
+    "password" : ""
+}
+
+###
+
+POST http://localhost:4000/login 
+Content-Type: application/json
+
+{
+    "username":"",
+    "password" : ""
+}

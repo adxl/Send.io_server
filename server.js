@@ -20,6 +20,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 app.use(express.json());
+// Dev
 app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 
 /* Authentication routes */
