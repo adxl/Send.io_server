@@ -4,9 +4,7 @@ const router = express.Router();
 
 const { Op } = require('sequelize');
 const { authenticate } = require('../auth');
-const {
-	isPresent, isNotPresent, buildPairId, buildRelation,
-} = require('../db');
+const {	isPresent, isNotPresent, buildPairId, buildRelation } = require('../db');
 
 const User = require('../models/user');
 const Friendship = require('../models/friendship');
@@ -25,7 +23,7 @@ router.get('/invites', authenticate, async (req, res) => {
 	return res.status(200).send(invites);
 });
 
-// send an friend request
+// send a friend request
 router.post('/invites/send', authenticate, async (req, res) => {
 	const { username } = req;
 	const { friend } = req.body;

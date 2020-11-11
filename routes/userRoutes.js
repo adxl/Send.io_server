@@ -10,10 +10,10 @@ const Friendship = require('../models/friendship');
 const Invite = require('../models/invite');
 
 // get list of users
-router.get('', async (req, res) => {
-	const users = await User.findAll();
-	return res.status(200).json(users);
-});
+// router.get('', async (req, res) => {
+// 	const users = await User.findAll();
+// 	return res.status(200).json(users);
+// });
 
 // get current user (from token)
 router.get('/me', authenticate, async (req, res) => {
