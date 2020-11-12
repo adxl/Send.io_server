@@ -21,7 +21,9 @@ const io = socketio(server);
 
 app.use(express.json());
 // Dev
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+// app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+
+app.use(cors());
 
 /* Authentication routes */
 app.use(authRouter);
